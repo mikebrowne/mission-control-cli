@@ -85,3 +85,29 @@ def test_task_update_json_format(env_vars: None, runner: CliRunner) -> None:
     payload = json.loads(result.stdout)
     assert payload["data"]["status"] == "done"
 
+
+@respx.mock
+def test_task_update_includes_openclaw_session_fields(env_vars: None, runner: CliRunner) -> None:
+    route = respx.patch("https://www.mbrowne.ca/api/mission-control/tasks/t1").mock(
+        return_value=httpx.Response(200, json={"ok": True, "data": {"id": "t1", "status": "in_progress"}})
+    )
+    result = runner.invoke(
+        app,
+        [
+            "task",
+            "update",
+            "--id",
+            "t1",
+            "--status",
+            "in_progress",
+            "--openclaw-session-key",
+            "agent:rachel:mc-task-t1-attempt-1",
+            "--openclaw-run-id",
+            "run-abc",
+        ],
+    )
+    assert result.exit_code == 0
+    sent = json.loads(route.calls[0].request.content.decode("utf-8"))
+    assert sent["openclaw_session_key"] == "agent:rachel:mc-task-t1-attempt-1"
+    assert sent["openclaw_run_id"] == "run-abc"
+

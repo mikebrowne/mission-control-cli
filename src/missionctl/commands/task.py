@@ -58,6 +58,8 @@ def update(
     error_message: str | None = typer.Option(None, "--error-message"),
     escalation_level: int | None = typer.Option(None, "--escalation-level"),
     output_ref: str | None = typer.Option(None, "--output-ref"),
+    openclaw_session_key: str | None = typer.Option(None, "--openclaw-session-key"),
+    openclaw_run_id: str | None = typer.Option(None, "--openclaw-run-id"),
     format: str = typer.Option("text"),
 ) -> None:
     output_format = format.lower()
@@ -79,6 +81,10 @@ def update(
         body["escalation_level"] = escalation_level
     if output_ref is not None:
         body["output_ref"] = output_ref
+    if openclaw_session_key is not None:
+        body["openclaw_session_key"] = openclaw_session_key
+    if openclaw_run_id is not None:
+        body["openclaw_run_id"] = openclaw_run_id
 
     try:
         _, payload = MCClient.from_env().patch_json(f"/tasks/{id}", body, tier1=True)
